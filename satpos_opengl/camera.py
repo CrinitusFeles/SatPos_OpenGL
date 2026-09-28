@@ -12,18 +12,16 @@ class UniformBuffer:
         self.data = bytearray(1024)
         self.ubo: Buffer = self.ctx.buffer(self.data)
 
-    def set_camera(self, eye, target, aspect_ratio: float = 1):
+    def set_camera(self, pos: glm.vec3, target: glm.vec3, aspect_ratio: float = 1):
         # Проекция
         proj = glm.perspective(45.0, aspect_ratio, 0.001, 135.0)
         # Матрица вида
-        look = glm.lookAt(eye, target, (0.0, 1.0, 0.0))
-        camera = proj * look
-
-
+        camera = proj * glm.lookAt(pos, target, (0.0, 1.0, 0.0))
         # Записываем матрицу (4x4 float = 64 байта)
         self.data[0:64] = camera.to_bytes()
+        self.data[80:92] = pos.to_bytes()
 
-    def set_light_direction(self, x, y, z):
+    def set_light_pos(self, x, y, z):
         self.data[64:80] = struct.pack('4f', x, y, z, 0.0)
 
     def use(self):
@@ -68,7 +66,7 @@ class Camera:
             self.cam_target = target_pos
 
         self.uniform_buffer.set_camera(self.cam_pos, self.cam_target, self.aspect_radio)
-        self.uniform_buffer.set_light_direction(10.0, 0, 10.0)
+        self.uniform_buffer.set_light_pos(10.0, 0, 10.0)
         self.uniform_buffer.use()
 
     def resizeGL(self, w, h):

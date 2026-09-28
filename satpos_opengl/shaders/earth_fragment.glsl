@@ -3,6 +3,7 @@
 layout (std140) uniform Common {
     mat4 camera;
     vec4 light_direction; // Предполагается, что это вектор направления ОТ солнца
+    vec3 viewPos;
 };
 
 uniform sampler2D day_texture;
@@ -19,7 +20,7 @@ layout (location = 0) out vec4 out_color;
 
 vec3 calculate_lighting(vec3 normal, vec3 light_dir, vec3 diffuse_color, float specular_strength) {
     float diff = max(dot(normal, normalize(light_dir)), 0.0);
-    vec3 view_dir = normalize(camera[3].xyz - v_vertex);
+    vec3 view_dir = normalize(viewPos - v_vertex);
     vec3 reflect_dir = reflect(-normalize(light_dir), normal);
     float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0) * specular_strength;
 
@@ -34,7 +35,7 @@ void main() {
     N = normalize(N + normal_map_data * 0.005); // Смешиваем базовую нормаль с картой
 
     vec3 L = normalize(v_vertex-light_direction.xyz); // Направление на солнце
-    vec3 V = normalize(camera[3].xyz - v_vertex);   // Направление на камеру
+    vec3 V = normalize(viewPos - v_vertex);   // Направление на камеру
     // Но для сферы обычно используют вектор от центра (0,0,0) до точки.
     vec3 view_dir = normalize(-v_vertex);
 

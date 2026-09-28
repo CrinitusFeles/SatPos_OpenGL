@@ -1,1 +1,0 @@
-# SatPos_OpenGL

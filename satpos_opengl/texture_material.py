@@ -42,10 +42,10 @@ class TextureMaterial:
     def __init__(self, texture_path: Path):
         self.texture = ImageTexture(texture_path)
         self.ctx = moderngl.get_context()
-        self._fragment_shader: str = load_shader('texture_fragment.glsl')
-        self._vertex_shader: str = load_shader('vertex.glsl')
-        self.program = self.ctx.program(self._vertex_shader,
-                                                 self._fragment_shader)
+        self.program = self.ctx.program(
+            load_shader('vertex.glsl'),
+            load_shader('texture_fragment.glsl')
+        )
 
     def use(self):
         self.texture.use()

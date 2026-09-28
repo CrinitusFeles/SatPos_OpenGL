@@ -14,9 +14,10 @@ class EarthMaterial(TextureMaterial):
             'specular_map': ImageTexture(paths['specular']),
         }
         self.ctx = moderngl.get_context()
-        self._fragment_shader = load_shader('earth_fragment.glsl')
-        self._vertex_shader = load_shader('vertex.glsl')
-        self.program = self.ctx.program(self._vertex_shader, self._fragment_shader)
+        self.program = self.ctx.program(
+            load_shader('vertex.glsl'),
+            load_shader('earth_fragment.glsl')
+        )
 
     def use(self):
         # Активируем все текстуры на разных юнитах

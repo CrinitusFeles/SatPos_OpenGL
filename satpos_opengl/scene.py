@@ -56,7 +56,7 @@ class Scene:
         self.i = 0
 
     def render(self, wire: bool = False):
-        self.camera.render(glm.vec3(0, 0, 3))
+        self.camera.render(glm.vec3(0, 0, 0))
         # self.camera.render(glm.vec3(self.sat_path[self.i]))
 
         self.space.render((0, 0, 0), 20, False)

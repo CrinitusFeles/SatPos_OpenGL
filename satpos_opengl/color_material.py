@@ -6,11 +6,9 @@ from satpos_opengl.utils import load_shader
 class ColorMaterial:
     def __init__(self):
         self.ctx = moderngl.get_context()
-        self._vertex_shader = load_shader('vertex.glsl')
-        self._fragment_shader = load_shader('color_fragment.glsl')
         self.program = self.ctx.program(
-            self._vertex_shader,
-            self._fragment_shader
+            load_shader('vertex.glsl'),
+            load_shader('color_fragment.glsl')
         )
         self.color = (1.0, 1.0, 1.0)
         self.ambient = (1.0, 1.0, 1.0)

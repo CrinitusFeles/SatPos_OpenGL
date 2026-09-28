@@ -7,6 +7,7 @@ from objloader import Obj
 from pyglm import glm
 
 from satpos_opengl.color_material import ColorMaterial
+from satpos_opengl.picking_material import PickingMaterial
 from satpos_opengl.texture_material import TextureMaterial
 
 
@@ -36,7 +37,7 @@ class Mesh:
         self.geometry: ModelGeometry = ModelGeometry(obj_path)
         self.vao: VertexArray = material.vertex_array(self.geometry.vbo)
         self.material: ColorMaterial | TextureMaterial = material
-        self.picking_material = ColorMaterial()
+        self.picking_material = PickingMaterial()
         self.picking_vao = self.picking_material.vertex_array(self.geometry.vbo)
 
         self.picking_color = picking_color

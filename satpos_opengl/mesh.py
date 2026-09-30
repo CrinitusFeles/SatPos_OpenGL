@@ -6,15 +6,15 @@ from moderngl import Buffer, Context, VertexArray
 from objloader import Obj
 from pyglm import glm
 
-from satpos_opengl.color_material import ColorMaterial
-from satpos_opengl.picking_material import PickingMaterial
-from satpos_opengl.texture_material import TextureMaterial
+from satpos_opengl.materials.base import Material
+from satpos_opengl.materials.picking import PickingMaterial
 
 
 def flatten_comp(matrix):
     return [item for row in matrix for item in row]
 
-def calc_transform(position, scale, rotation):
+def model_matrix(position: tuple[float, float, float], scale: float,
+                 rotation: glm.mat4):
     transform_matrix = glm.mat4(1.0)
     transform_matrix = glm.translate(transform_matrix, glm.vec3(position))
     transform_matrix = transform_matrix * rotation
@@ -31,17 +31,17 @@ class ModelGeometry:
 
 
 class Mesh:
-    def __init__(self, material, obj_path: Path,
+    def __init__(self, material: Material, obj_path: Path,
                  picking_color: tuple = (1.0, 1.0, 1.0)) -> None:
         self.ctx: Context = moderngl.get_context()
         self.geometry: ModelGeometry = ModelGeometry(obj_path)
         self.vao: VertexArray = material.vertex_array(self.geometry.vbo)
-        self.material: ColorMaterial | TextureMaterial = material
+        self.material: Material = material
         self.picking_material = PickingMaterial()
         self.picking_vao = self.picking_material.vertex_array(self.geometry.vbo)
 
         self.picking_color = picking_color
-        self._pos = 0
+        self._pos = (0.0, 0.0, 0.0)
         self._scale= 0
         self.is_highlighted = False
 
@@ -49,7 +49,7 @@ class Mesh:
         self.angular_velocity: glm.vec3 = glm.vec3(0, 0, 0)
         self.rotation_matrix: glm.mat4x4 = glm.mat4(1.0)
 
-    def render(self, position, scale, wire: bool = True):
+    def render(self, position: tuple[float, float, float], scale: float, wire: bool = True):
         self.material.use()
         self._pos = position
         self._scale = scale
@@ -62,7 +62,7 @@ class Mesh:
             gl.glStencilFunc(gl.GL_ALWAYS, 1, 0xFF)
             gl.glStencilOp(gl.GL_KEEP, gl.GL_KEEP, gl.GL_REPLACE)
 
-        self.vao.program['transform'] = calc_transform(position, scale,
+        self.vao.program['model'] = model_matrix(position, scale,
                                                        self.rotation_matrix)
         self.vao.render()
         # if self.is_highlighted:
@@ -72,7 +72,7 @@ class Mesh:
     def draw_outline(self, position, scale):
         self.picking_material.use()
         self.picking_material.color = (1.0, 0.5, 0.0)
-        self.picking_vao.program['transform'] = calc_transform(position, scale * 1.02,
+        self.picking_vao.program['model'] = model_matrix(position, scale * 1.02,
                                                        self.rotation_matrix)
         gl.glDisable(gl.GL_DEPTH_TEST)
         # self.ctx.disable(self.ctx.DEPTH_TEST)
@@ -86,7 +86,7 @@ class Mesh:
     def draw_id_only(self):
         self.picking_material.use()
         self.picking_material.color = self.picking_color
-        self.picking_vao.program['transform'] = calc_transform(self._pos, self._scale,
+        self.picking_vao.program['model'] = model_matrix(self._pos, self._scale,
                                                        self.rotation_matrix)
         self.picking_vao.render()
 

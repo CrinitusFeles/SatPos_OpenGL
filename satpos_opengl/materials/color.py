@@ -1,15 +1,9 @@
-import moderngl
-
-from satpos_opengl.utils import load_shader
+from satpos_opengl.materials.base import Material
 
 
-class ColorMaterial:
+class ColorMaterial(Material):
     def __init__(self):
-        self.ctx = moderngl.get_context()
-        self.program = self.ctx.program(
-            load_shader('vertex.glsl'),
-            load_shader('color_fragment.glsl')
-        )
+        super().__init__('vertex.glsl', 'color_fragment.glsl')
         self.color = (1.0, 1.0, 1.0)
         self.ambient = (1.0, 1.0, 1.0)
         self.diffuse = (1.0, 1.0, 1.0)

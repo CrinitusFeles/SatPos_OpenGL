@@ -12,11 +12,16 @@ class UniformBuffer:
         self.data = bytearray(1024)
         self.ubo: Buffer = self.ctx.buffer(self.data)
 
-    def set_camera(self, pos: glm.vec3, target: glm.vec3, aspect_ratio: float = 1):
+    def set_camera(self, pos: glm.vec3, target: glm.vec3,
+                   aspect_ratio: float = 1, use_ortho: bool = False):
         # Проекция
-        proj = glm.perspective(45.0, aspect_ratio, 0.001, 135.0)
+        if use_ortho:
+            projection_matrix = glm.ortho(-4, 4, -4, 4, 0.1, 135)
+        else:
+            projection_matrix = glm.perspective(45.0, aspect_ratio, 0.001, 135.0)
         # Матрица вида
-        camera = proj * glm.lookAt(pos, target, (0.0, 1.0, 0.0))
+        view_matrix = glm.lookAt(pos, target, (0.0, 1.0, 0.0))
+        camera = projection_matrix * view_matrix
         # Записываем матрицу (4x4 float = 64 байта)
         self.data[0:64] = camera.to_bytes()
         self.data[80:92] = pos.to_bytes()

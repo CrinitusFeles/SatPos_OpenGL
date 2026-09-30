@@ -5,7 +5,7 @@ import moderngl
 import numpy as np
 from PIL import Image, ImageOps
 
-from satpos_opengl.utils import load_shader
+from satpos_opengl.materials.base import Material
 
 imageio.plugins.freeimage.download()
 
@@ -38,14 +38,10 @@ class ImageTexture:
 
 
 
-class TextureMaterial:
+class TextureMaterial(Material):
     def __init__(self, texture_path: Path):
+        super().__init__('vertex.glsl', 'texture_fragment.glsl')
         self.texture = ImageTexture(texture_path)
-        self.ctx = moderngl.get_context()
-        self.program = self.ctx.program(
-            load_shader('vertex.glsl'),
-            load_shader('texture_fragment.glsl')
-        )
 
     def use(self):
         self.texture.use()

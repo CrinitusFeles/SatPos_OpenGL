@@ -1,5 +1,6 @@
 # import math
 import struct
+import time
 from pathlib import Path
 
 import moderngl
@@ -9,10 +10,11 @@ from pyglm import glm
 from PyQt6 import QtCore, QtGui, QtOpenGLWidgets, QtWidgets
 
 from satpos_opengl.camera import Camera
-from satpos_opengl.earth_material import EarthMaterial
-from satpos_opengl.mesh import ColorMaterial, Mesh
+from satpos_opengl.materials.color import ColorMaterial
+from satpos_opengl.materials.earth import EarthMaterial
+from satpos_opengl.materials.texture import TextureMaterial
+from satpos_opengl.mesh import Mesh
 from satpos_opengl.sat_path import calc_sat
-from satpos_opengl.texture_material import TextureMaterial
 
 assets_path = Path(__file__).parent / 'assets'
 objects_path = Path(__file__).parent / 'objects'
@@ -88,19 +90,29 @@ class Scene:
 class Canvas(QtOpenGLWidgets.QOpenGLWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.timer = self.startTimer(int(1000/60))
+        self.timer = self.startTimer(1)
 
         fmt = QtGui.QSurfaceFormat()
         fmt.setVersion(4, 1)
         fmt.setProfile(QtGui.QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         fmt.setDepthBufferSize(24)
+        fmt.setSamples(8)
         fmt.setStencilBufferSize(8)
         self.grabKeyboard()
-        QtGui.QSurfaceFormat.setDefaultFormat(fmt)
+        self.setFormat(fmt)
+        # QtGui.QSurfaceFormat.setDefaultFormat(fmt)
 
         self.last_mouse_pos = QtCore.QPoint()
         self.sh_wire = QtGui.QShortcut(QtGui.QKeySequence('Shift+Z'), self, self.toggle_wire_mode)
         self.wire_mode = False
+        self._layout = QtWidgets.QVBoxLayout()
+        self.fps_label = QtWidgets.QLabel('hello', self)
+        font = QtGui.QFont('Consolas', 22)
+        self.fps_label.setStyleSheet('color: #FFFFFF')
+        self.fps_label.setFont(font)
+        self.frame_count = 0
+        self.start_time = time.time()
+
 
     def toggle_wire_mode(self):
         self.wire_mode = not self.wire_mode
@@ -109,6 +121,8 @@ class Canvas(QtOpenGLWidgets.QOpenGLWidget):
         self.ctx = moderngl.create_context()
         self.ctx.clear()
         self.ctx.enable(self.ctx.DEPTH_TEST)
+        gl.glEnable(gl.GL_MULTISAMPLE)
+        gl.glEnable(gl.GL_LINE_SMOOTH)
         self.scene = Scene()
         self.sh_fly = QtGui.QShortcut(QtGui.QKeySequence('F'), self, self.scene.camera.toggle_fly_mode)
 
@@ -120,11 +134,24 @@ class Canvas(QtOpenGLWidgets.QOpenGLWidget):
             color_attachments=[self.scene.ctx.texture((w, h), 3)],
             depth_attachment=self.scene.ctx.depth_renderbuffer((w, h))
         )
+        self.fps_label.move(w - self.fps_label.width() - 20, 20)
+
 
     def paintGL(self):
         super().paintGL()
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT | gl.GL_STENCIL_BUFFER_BIT)  # type: ignore
         self.scene.render(self.wire_mode)
+        end_time = time.time()
+        delta_time = end_time - self.start_time
+        if delta_time >= 1.0:
+            fps = self.frame_count / delta_time
+            self.fps_label.setText(f"FPS: {fps:.2f}")
+
+            # Сбрасываем счётчик для следующей секунды
+            self.frame_count = 0
+            self.start_time = end_time
+
+        self.frame_count += 1
 
     def timerEvent(self, a0):
         self.scene.time += (1 / 60)
@@ -216,8 +243,8 @@ class Canvas(QtOpenGLWidgets.QOpenGLWidget):
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.resize(1000, 1000)
         self._canvas = Canvas(self)
+        self.resize(1000, 1000)
         self.setCentralWidget(self._canvas)
 
 

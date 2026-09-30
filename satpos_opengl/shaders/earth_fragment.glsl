@@ -2,7 +2,7 @@
 
 layout (std140) uniform Common {
     mat4 camera;
-    vec4 light_direction; // Предполагается, что это вектор направления ОТ солнца
+    vec4 light_direction;
     vec3 viewPos;
 };
 

@@ -2,7 +2,7 @@
 
 layout (std140) uniform Common {
     mat4 camera;
-    vec4 light_direction;
+    vec4 lightPos;
     vec3 viewPos;
 };
 struct Material {
@@ -34,10 +34,6 @@ in vec2 v_uv;
 layout (location = 0) out vec4 FragColor;
 
 void main() {
-    // out_color = vec4(color, 1.0);
-    // float lum = dot(normalize(v_normal), normalize(light_direction.xyz));
-    // out_color.rgb *= max(lum, 0) * 0.5 + 0.5;
-
     // point light
     float l_distance = length(light.position - FragPos);
     float attenuation = 1.0 / (light.constant + light.linear * l_distance + light.quadratic * (l_distance * l_distance));

@@ -5,7 +5,7 @@ layout (std140) uniform Common {
     vec3 viewPos;
 };
 
-uniform mat4 transform;
+uniform mat4 model;
 
 layout (location = 0) in vec3 in_vertex;
 layout (location = 1) in vec3 in_normal;
@@ -16,9 +16,9 @@ out vec3 v_normal;
 out vec2 v_uv;
 
 void main() {
-    vec4 world_pos = transform * vec4(in_vertex, 1.0);
+    vec4 world_pos = model * vec4(in_vertex, 1.0);
     v_vertex = world_pos.xyz;
-    v_normal = mat3(transform) * in_normal;
+    v_normal = mat3(model) * in_normal;
     v_uv = in_uv;
 
     gl_Position = camera * world_pos;
